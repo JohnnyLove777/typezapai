@@ -1324,7 +1324,7 @@ async function createSessionJohnnyV2(data, datafrom, url_registro, fluxo) {
        
     
         const sendRequest = async () => {
-            const media = await tratarMidia(message);
+            const media = await tratarMidiaObj(message);
             const response = await fetch('http://localhost:3000/sendMessage', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -1371,7 +1371,7 @@ async function createSessionJohnnyV2(data, datafrom, url_registro, fluxo) {
         
     
         const sendRequest = async () => {
-            const media = await tratarMidia(message);
+            const media = await tratarMidiaObj(message);
             const response = await fetch('http://localhost:3000/sendMessage', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -1418,7 +1418,7 @@ async function createSessionJohnnyV2(data, datafrom, url_registro, fluxo) {
         
     
         const sendRequest = async () => {
-            const media = await tratarMidia(message);
+            const media = await tratarMidiaObj(message);
             
             const response = await fetch('http://localhost:3000/sendMessage', {
                 method: 'POST',
@@ -2347,7 +2347,7 @@ async function createSessionJohnny(data, url_registro, fluxo) {
        
     
         const sendRequest = async () => {
-            const media = await tratarMidia(message);
+            const media = await tratarMidiaObj(message);
             const response = await fetch('http://localhost:3000/sendMessage', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -2394,7 +2394,7 @@ async function createSessionJohnny(data, url_registro, fluxo) {
         
     
         const sendRequest = async () => {
-            const media = await tratarMidia(message);
+            const media = await tratarMidiaObj(message);
             const response = await fetch('http://localhost:3000/sendMessage', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -2441,7 +2441,7 @@ async function createSessionJohnny(data, url_registro, fluxo) {
         
     
         const sendRequest = async () => {
-            const media = await tratarMidia(message);
+            const media = await tratarMidiaObj(message);
             await chat.sendStateRecording(); // Simulando áudio gravando
             const response = await fetch('http://localhost:3000/sendMessage', {
                 method: 'POST',
@@ -2564,6 +2564,30 @@ async function tratarMidia(filePath) {
   } catch (e) {
       console.error(e);
   }
+}
+
+async function tratarMidiaObj(message) {  
+  try {
+    let fileUrl = message.content.url; // URL do arquivo
+    let mimetype;
+    let filename;
+
+    // Use Axios para buscar o arquivo e determinar o MIME type.
+    const attachment = await axios.get(fileUrl, {
+      responseType: 'arraybuffer',
+    }).then(response => {
+      mimetype = response.headers['content-type'];
+      filename = fileUrl.split("/").pop();
+      return response.data.toString('base64');
+    });
+
+    if (attachment) {
+      const media = new MessageMedia(mimetype, attachment, filename);
+      return media;
+    }
+  } catch (e) {
+    console.error(e);
+  }  
 }
 
 // Inicializando banco de dados dos fluxos do Typebot
@@ -2983,7 +3007,7 @@ client.on('message', async msg => {
               
           
               const sendRequest = async () => {
-                  const media = await tratarMidia(message);
+                  const media = await tratarMidiaObj(message);
                   const response = await fetch('http://localhost:3000/sendMessage', {
                       method: 'POST',
                       headers: { 'Content-Type': 'application/json' },
@@ -3030,7 +3054,7 @@ client.on('message', async msg => {
               
           
               const sendRequest = async () => {
-                  const media = await tratarMidia(message);
+                  const media = await tratarMidiaObj(message);
                   const response = await fetch('http://localhost:3000/sendMessage', {
                       method: 'POST',
                       headers: { 'Content-Type': 'application/json' },
@@ -3077,7 +3101,7 @@ client.on('message', async msg => {
               
           
               const sendRequest = async () => {
-                  const media = await tratarMidia(message);
+                  const media = await tratarMidiaObj(message);
                   await chat.sendStateRecording(); // Simulando áudio gravando
                   const response = await fetch('http://localhost:3000/sendMessage', {
                       method: 'POST',
@@ -4267,7 +4291,7 @@ client.on('vote_update', async (vote) => {
       
   
       const sendRequest = async () => {
-          const media = await tratarMidia(message);
+          const media = await tratarMidiaObj(message);
           const response = await fetch('http://localhost:3000/sendMessage', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
@@ -4314,7 +4338,7 @@ client.on('vote_update', async (vote) => {
       
   
       const sendRequest = async () => {
-          const media = await tratarMidia(message);
+          const media = await tratarMidiaObj(message);
           const response = await fetch('http://localhost:3000/sendMessage', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
@@ -4361,7 +4385,7 @@ client.on('vote_update', async (vote) => {
       
   
       const sendRequest = async () => {
-          const media = await tratarMidia(message);
+          const media = await tratarMidiaObj(message);
           const response = await fetch('http://localhost:3000/sendMessage', {
               method: 'POST',
               headers: { 'Content-Type': 'application/json' },
