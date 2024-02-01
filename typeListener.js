@@ -2590,6 +2590,10 @@ if (apiInit) {
     console.error("Objeto não encontrado no banco de dados.");
 }
 
+async function initializeClient(openaiKey) {    
+    openai = new OpenAI({ apiKey: openaiKey });
+}
+
 client.on("disconnected", async (reason) => {
   try {
       console.info(`Disconnected session: ${session}, reason: ${reason}`);
@@ -3383,7 +3387,7 @@ await delay(2000);
     const elevenLabsKey = await readName(msg.from);
 
     // Inicializando os clientes
-    initializeClient(openaiKey);
+    await initializeClient(openaiKey);
 
     await sendRequest(msg.from, `API ElevenLabs registrada! 🚀
 
@@ -3397,25 +3401,7 @@ await delay(2000);
     deleteObjectSelf(msg.from);
     await delay(100);
 }
-
-  /*if (msg.fromMe && msg.body !== null && msg.to === msg.from && !existsTheDBSystem() && existsDBSelf(msg.from) && readFlowSelf(msg.from) === 'stepAtivar03' && readIdSelf(msg.from) !== JSON.stringify(msg.id.id) && readInteractSelf(msg.from) === 'done' && !msg.hasMedia) {
-    updateInteractSelf(msg.from, 'typing');
-    updateIdSelf(msg.from, JSON.stringify(msg.id.id));    
-    updateName(msg.from, msg.body);
-
-await sendRequest(msg.from, `API ElevenLabs registrada! 🚀
-
-${readName(msg.from)}
-
-*Pode usar o seu TypeZapIA!!* 🤖`, "text");
-await delay(2000);
-    addObjectSystem(await readURLRegistro(msg.from), await readGatilho(msg.from), await readName(msg.from));
-    updateFlowSelf(msg.from,'stepAtivar04');
-    updateInteractSelf(msg.from, 'done');
-    deleteObjectSelf(msg.from);
-    await delay(100);
-  }*/
-
+  
   // Resetar Step Self
   if (msg.fromMe && msg.body === "00" && msg.to === msg.from) {
     deleteObjectSelf(msg.from);
