@@ -1368,26 +1368,40 @@ async function createSessionJohnnyV2(data, datafrom, url_registro, fluxo) {
         let retries = 0;
         const maxRetries = 15; // Máximo de tentativas
         let delay = init_delay; // Tempo inicial de espera em milissegundos
-        
+        const timeout = 60000; // Timeout em milissegundos (por exemplo, 5000ms = 5 segundos)
     
         const sendRequest = async () => {
-            const media = await tratarMidiaObj(message);
-            const response = await fetch('http://localhost:3000/sendMessage', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    destinatario: datafrom,
-                    media: media,
-                    tipo: "video",
-                    msg: data
-                })
-            });
+            const media = await tratarMidia(message);
+            const controller = new AbortController(); // Cria um novo AbortController
+            const id = setTimeout(() => controller.abort(), timeout); // Define um timeout para abortar a solicitação
     
-            if (!response.ok) {
-                throw new Error(`Request failed with status ${response.status}`);
+            try {
+                const response = await fetch('http://localhost:3000/sendMessage', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        destinatario: datafrom,
+                        media: media,
+                        tipo: "video",
+                        msg: ""
+                    }),
+                    signal: controller.signal // Passa o signal para a solicitação fetch
+                });
+    
+                clearTimeout(id); // Limpa o timeout se a solicitação foi concluída antes do timeout
+    
+                if (!response.ok) {
+                    throw new Error(`Request failed with status ${response.status}`);
+                }
+    
+                return await response.json();
+            } catch (error) {
+                clearTimeout(id); // Assegura que o timeout é limpo em caso de erro
+                if (error.name === 'AbortError') {
+                    throw new Error('Request timed out'); // Trata o erro de timeout especificamente
+                }
+                throw error; // Lança o erro para ser tratado mais tarde
             }
-    
-            return await response.json();
         };
     
         while (retries < maxRetries) {
@@ -1397,7 +1411,7 @@ async function createSessionJohnnyV2(data, datafrom, url_registro, fluxo) {
                 break; // Sai do loop se a requisição for bem-sucedida
             } catch (error) {
                 retries++;
-                console.log(`Tentativa ${retries}/${maxRetries} falhou. Tentando novamente em ${delay}ms.`);
+                console.log(`Tentativa ${retries}/${maxRetries} falhou. Tentando novamente em ${delay}ms. Erro: ${error.message}`);
                 if (!restartAPI) {
                     myEmitter.emit('errorEvent', error);
                     restartAPI = true;
@@ -1410,7 +1424,7 @@ async function createSessionJohnnyV2(data, datafrom, url_registro, fluxo) {
         if (retries === maxRetries) {
             console.error('Erro: Número máximo de tentativas de envio atingido.');
         }
-      }                            
+      }                               
       if (message.type === 'audio') {
         let retries = 0;
         const maxRetries = 15; // Máximo de tentativas
@@ -2391,26 +2405,40 @@ async function createSessionJohnny(data, url_registro, fluxo) {
         let retries = 0;
         const maxRetries = 15; // Máximo de tentativas
         let delay = init_delay; // Tempo inicial de espera em milissegundos
-        
+        const timeout = 60000; // Timeout em milissegundos (por exemplo, 5000ms = 5 segundos)
     
         const sendRequest = async () => {
-            const media = await tratarMidiaObj(message);
-            const response = await fetch('http://localhost:3000/sendMessage', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    destinatario: data.from,
-                    media: media,
-                    tipo: "video",
-                    msg: data
-                })
-            });
+            const media = await tratarMidia(message);
+            const controller = new AbortController(); // Cria um novo AbortController
+            const id = setTimeout(() => controller.abort(), timeout); // Define um timeout para abortar a solicitação
     
-            if (!response.ok) {
-                throw new Error(`Request failed with status ${response.status}`);
+            try {
+                const response = await fetch('http://localhost:3000/sendMessage', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        destinatario: data.from,
+                        media: media,
+                        tipo: "video",
+                        msg: data
+                    }),
+                    signal: controller.signal // Passa o signal para a solicitação fetch
+                });
+    
+                clearTimeout(id); // Limpa o timeout se a solicitação foi concluída antes do timeout
+    
+                if (!response.ok) {
+                    throw new Error(`Request failed with status ${response.status}`);
+                }
+    
+                return await response.json();
+            } catch (error) {
+                clearTimeout(id); // Assegura que o timeout é limpo em caso de erro
+                if (error.name === 'AbortError') {
+                    throw new Error('Request timed out'); // Trata o erro de timeout especificamente
+                }
+                throw error; // Lança o erro para ser tratado mais tarde
             }
-    
-            return await response.json();
         };
     
         while (retries < maxRetries) {
@@ -2420,7 +2448,7 @@ async function createSessionJohnny(data, url_registro, fluxo) {
                 break; // Sai do loop se a requisição for bem-sucedida
             } catch (error) {
                 retries++;
-                console.log(`Tentativa ${retries}/${maxRetries} falhou. Tentando novamente em ${delay}ms.`);
+                console.log(`Tentativa ${retries}/${maxRetries} falhou. Tentando novamente em ${delay}ms. Erro: ${error.message}`);
                 if (!restartAPI) {
                     myEmitter.emit('errorEvent', error);
                     restartAPI = true;
@@ -2433,7 +2461,7 @@ async function createSessionJohnny(data, url_registro, fluxo) {
         if (retries === maxRetries) {
             console.error('Erro: Número máximo de tentativas de envio atingido.');
         }
-      }                            
+      }                             
       if (message.type === 'audio') {
         let retries = 0;
         const maxRetries = 15; // Máximo de tentativas
@@ -2616,28 +2644,6 @@ if (apiInit) {
 
 async function initializeClient(openaiKey) {    
     openai = new OpenAI({ apiKey: openaiKey });
-}
-
-client.on("disconnected", async (reason) => {
-  try {
-      console.info(`Disconnected session: ${session}, reason: ${reason}`);
-
-      // Reinicia a sessão do WhatsApp após um curto atraso
-      setTimeout(() => startWhatsAppSession(session), 2000);
-  } catch (err) {
-      console.error(`Error handling disconnection for session ${session}: ${err}`);
-  }
-});
-
-function startWhatsAppSession(sessionName) {
-  // Executar o comando para reiniciar o processo específico
-  exec(`pm2 restart ${sessionName}`, (err, stdout, stderr) => {
-      if (err) {
-          console.error(`Erro ao tentar reiniciar a sessão ${sessionName}:`, err);
-          return;
-      }
-      console.log(`Saída do comando de reinicialização para ${sessionName}:`, stdout);
-  });
 }
 
 // Funções auxiliares como updateSessionStatus, clearSessionData e startWhatsAppSession devem estar definidas.
@@ -3051,26 +3057,40 @@ client.on('message', async msg => {
               let retries = 0;
               const maxRetries = 15; // Máximo de tentativas
               let delay = init_delay; // Tempo inicial de espera em milissegundos
-              
+              const timeout = 60000; // Timeout em milissegundos (por exemplo, 5000ms = 5 segundos)
           
               const sendRequest = async () => {
-                  const media = await tratarMidiaObj(message);
-                  const response = await fetch('http://localhost:3000/sendMessage', {
-                      method: 'POST',
-                      headers: { 'Content-Type': 'application/json' },
-                      body: JSON.stringify({
-                          destinatario: msg.from,
-                          media: media,
-                          tipo: "video",
-                          msg: msg
-                      })
-                  });
+                  const media = await tratarMidia(message);
+                  const controller = new AbortController(); // Cria um novo AbortController
+                  const id = setTimeout(() => controller.abort(), timeout); // Define um timeout para abortar a solicitação
           
-                  if (!response.ok) {
-                      throw new Error(`Request failed with status ${response.status}`);
+                  try {
+                      const response = await fetch('http://localhost:3000/sendMessage', {
+                          method: 'POST',
+                          headers: { 'Content-Type': 'application/json' },
+                          body: JSON.stringify({
+                              destinatario: msg.from,
+                              media: media,
+                              tipo: "video",
+                              msg: msg
+                          }),
+                          signal: controller.signal // Passa o signal para a solicitação fetch
+                      });
+          
+                      clearTimeout(id); // Limpa o timeout se a solicitação foi concluída antes do timeout
+          
+                      if (!response.ok) {
+                          throw new Error(`Request failed with status ${response.status}`);
+                      }
+          
+                      return await response.json();
+                  } catch (error) {
+                      clearTimeout(id); // Assegura que o timeout é limpo em caso de erro
+                      if (error.name === 'AbortError') {
+                          throw new Error('Request timed out'); // Trata o erro de timeout especificamente
+                      }
+                      throw error; // Lança o erro para ser tratado mais tarde
                   }
-          
-                  return await response.json();
               };
           
               while (retries < maxRetries) {
@@ -3080,7 +3100,7 @@ client.on('message', async msg => {
                       break; // Sai do loop se a requisição for bem-sucedida
                   } catch (error) {
                       retries++;
-                      console.log(`Tentativa ${retries}/${maxRetries} falhou. Tentando novamente em ${delay}ms.`);
+                      console.log(`Tentativa ${retries}/${maxRetries} falhou. Tentando novamente em ${delay}ms. Erro: ${error.message}`);
                       if (!restartAPI) {
                           myEmitter.emit('errorEvent', error);
                           restartAPI = true;
@@ -4303,26 +4323,40 @@ client.on('vote_update', async (vote) => {
       let retries = 0;
       const maxRetries = 15; // Máximo de tentativas
       let delay = init_delay; // Tempo inicial de espera em milissegundos
-      
+      const timeout = 60000; // Timeout em milissegundos (por exemplo, 5000ms = 5 segundos)
   
       const sendRequest = async () => {
-          const media = await tratarMidiaObj(message);
-          const response = await fetch('http://localhost:3000/sendMessage', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({
-                  destinatario: vote.voter,
-                  media: media,
-                  tipo: "video",
-                  msg: vote
-              })
-          });
+          const media = await tratarMidia(message);
+          const controller = new AbortController(); // Cria um novo AbortController
+          const id = setTimeout(() => controller.abort(), timeout); // Define um timeout para abortar a solicitação
   
-          if (!response.ok) {
-              throw new Error(`Request failed with status ${response.status}`);
+          try {
+              const response = await fetch('http://localhost:3000/sendMessage', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                      destinatario: vote.voter,
+                      media: media,
+                      tipo: "video",
+                      msg: vote
+                  }),
+                  signal: controller.signal // Passa o signal para a solicitação fetch
+              });
+  
+              clearTimeout(id); // Limpa o timeout se a solicitação foi concluída antes do timeout
+  
+              if (!response.ok) {
+                  throw new Error(`Request failed with status ${response.status}`);
+              }
+  
+              return await response.json();
+          } catch (error) {
+              clearTimeout(id); // Assegura que o timeout é limpo em caso de erro
+              if (error.name === 'AbortError') {
+                  throw new Error('Request timed out'); // Trata o erro de timeout especificamente
+              }
+              throw error; // Lança o erro para ser tratado mais tarde
           }
-  
-          return await response.json();
       };
   
       while (retries < maxRetries) {
@@ -4332,7 +4366,7 @@ client.on('vote_update', async (vote) => {
               break; // Sai do loop se a requisição for bem-sucedida
           } catch (error) {
               retries++;
-              console.log(`Tentativa ${retries}/${maxRetries} falhou. Tentando novamente em ${delay}ms.`);
+              console.log(`Tentativa ${retries}/${maxRetries} falhou. Tentando novamente em ${delay}ms. Erro: ${error.message}`);
               if (!restartAPI) {
                   myEmitter.emit('errorEvent', error);
                   restartAPI = true;
