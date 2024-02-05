@@ -1371,7 +1371,7 @@ async function createSessionJohnnyV2(data, datafrom, url_registro, fluxo) {
         const timeout = 60000; // Timeout em milissegundos (por exemplo, 5000ms = 5 segundos)
     
         const sendRequest = async () => {
-            const media = await tratarMidia(message);
+            const media = await tratarMidiaObj(message);
             const controller = new AbortController(); // Cria um novo AbortController
             const id = setTimeout(() => controller.abort(), timeout); // Define um timeout para abortar a solicitação
     
@@ -2408,7 +2408,7 @@ async function createSessionJohnny(data, url_registro, fluxo) {
         const timeout = 60000; // Timeout em milissegundos (por exemplo, 5000ms = 5 segundos)
     
         const sendRequest = async () => {
-            const media = await tratarMidia(message);
+            const media = await tratarMidiaObj(message);
             const controller = new AbortController(); // Cria um novo AbortController
             const id = setTimeout(() => controller.abort(), timeout); // Define um timeout para abortar a solicitação
     
@@ -3060,7 +3060,7 @@ client.on('message', async msg => {
               const timeout = 60000; // Timeout em milissegundos (por exemplo, 5000ms = 5 segundos)
           
               const sendRequest = async () => {
-                  const media = await tratarMidia(message);
+                  const media = await tratarMidiaObj(message);
                   const controller = new AbortController(); // Cria um novo AbortController
                   const id = setTimeout(() => controller.abort(), timeout); // Define um timeout para abortar a solicitação
           
@@ -4326,7 +4326,7 @@ client.on('vote_update', async (vote) => {
       const timeout = 60000; // Timeout em milissegundos (por exemplo, 5000ms = 5 segundos)
   
       const sendRequest = async () => {
-          const media = await tratarMidia(message);
+          const media = await tratarMidiaObj(message);
           const controller = new AbortController(); // Cria um novo AbortController
           const id = setTimeout(() => controller.abort(), timeout); // Define um timeout para abortar a solicitação
   
