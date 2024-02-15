@@ -13,7 +13,7 @@ const sessao = "sendMessage";
 const app = express();
 const server = http.createServer(app);
 
-const port = 3000;
+const port = 8888;
 
 app.use(express.static('.'));
 //app.use(bodyParser.json());
@@ -26,7 +26,7 @@ app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
     puppeteer: {
       executablePath: 'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
     }
-  });*/
+});*/
   
   //Kit com os comandos otimizados para nuvem Ubuntu Linux (créditos Pedrinho da Nasa Comunidade ZDG)
   const client = new Client({
